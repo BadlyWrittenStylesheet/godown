@@ -11,12 +11,18 @@ type Particle interface {
     Draw(screen tcell.Screen)
     Pos() geom.Vec2
     Char() rune
+    Style() tcell.Style
 }
 
 type BaseParticle struct {
     pos geom.Vec2
     vel geom.Vec2
     char rune
+    style tcell.Style
+}
+
+func (p *BaseParticle) Style() tcell.Style {
+    return tcell.StyleDefault
 }
 
 func (p *BaseParticle) Update(w, h int, grid []Particle) {}
@@ -35,6 +41,7 @@ func NewParticle(x, y, vx, vy int, char rune) *BaseParticle {
         pos: geom.Vec2{X: x, Y: y},
         vel: geom.Vec2{X: vx, Y: vy},
         char: char,
+        style: tcell.StyleDefault,
     }
 }
 

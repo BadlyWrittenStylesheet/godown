@@ -16,8 +16,14 @@ func NewSand(x, y int) *Sand {
             pos: geom.Vec2{X: x, Y: y},
             vel: geom.Vec2{X: 0, Y: 1},
             char: '█',
+            style: tcell.StyleDefault.Foreground(tcell.ColorYellow),
         },
     }
+}
+
+
+func (s *Sand) Style() tcell.Style {
+    return s.style
 }
 
 func (s *Sand) Update(w, h int, grid []Particle) {
@@ -49,7 +55,7 @@ func (s *Sand) Update(w, h int, grid []Particle) {
 
 func (s *Sand) Draw(screen tcell.Screen) {
     pos := s.Pos()
-    screen.SetContent(pos.X, pos.Y, s.Char(), nil, tcell.StyleDefault)
+    screen.SetContent(pos.X, pos.Y, s.Char(), nil, s.Style())
 }
 
 func (s *Sand) Pos() (geom.Vec2) {

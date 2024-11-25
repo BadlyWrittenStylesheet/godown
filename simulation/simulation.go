@@ -2,8 +2,6 @@ package simulation
 
 import (
 	"github.com/gdamore/tcell/v2"
-	// "godown/geom"
-	"godown/geom"
 	"godown/particles"
 )
 
@@ -22,15 +20,6 @@ func (s *Simulation) Update() {
     for _, p := range s.Particles {
         p.Update(s.W, s.H, s.Particles)
     }
-}
-
-func (s *Simulation) ParticleAt(pos geom.Vec2) bool {
-    for _, p := range s.Particles {
-        if p.Pos() == pos {
-            return true
-        }
-    }
-    return false
 }
 
 func (s *Simulation) Draw() {

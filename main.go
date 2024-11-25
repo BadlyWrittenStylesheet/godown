@@ -26,8 +26,6 @@ func main() {
 
     sim := simulation.NewSimulation(screen)
 
-
-    // p = particles.NewParticle()
     s := particles.NewSand(1, 1)
 
     sim.AddParticle(s)
@@ -38,22 +36,17 @@ func main() {
 
     go func() {
         ticker := time.NewTicker(time.Second / 10)
-        tickerReset := time.NewTicker(time.Minute)
         defer ticker.Stop()
 
         loop:
         for {
             select {
-            case <-tickerReset.C:
-                var newParticles []particles.Particle
-                for _, p := range sim.Particles {
-                    if p.Pos().Y != sim.H - 1 {
-                        newParticles = append(newParticles, p)
-                    }
+            case <-ticker.C:
+
+                if len(sim.Particles) > 3 * sim.W {
+                    clearBottomRow(sim)
                 }
 
-                sim.Particles = newParticles
-            case <-ticker.C:
                 status := []rune(fmt.Sprintf("sim.H = %d | sim.W = %d | len(sim.Particles) = %d | timePassed = %f", sim.H, sim.W, len(sim.Particles), time.Now().Sub(start).Seconds()))
                 randX := rand.Intn(sim.W)
                 randY := rand.Intn(sim.H / 2)
@@ -61,7 +54,7 @@ func main() {
                 sim.AddParticle(s)
                 sim.Draw()
                 sim.Update()
-                screen.SetContent(0, 0, '_', status, tcell.StyleDefault)
+                screen.SetContent(0, 0, ' ', status, tcell.StyleDefault)
                 screen.Show()
             case <- quit:
                 break loop
@@ -78,12 +71,25 @@ func main() {
                 screen.Fini()
                 return
             case ' ':
-                randX := rand.Intn(sim.W)
-                randY := rand.Intn(sim.H / 2)
-                s = particles.NewSand(randX, randY)
+                // randX := rand.Intn(sim.W)
+                // randY := rand.Intn(sim.H / 2)
+                s = particles.NewSand(sim.W / 2, 0)
                 sim.AddParticle(s)
+            case 's':
+                clearBottomRow(sim)
             }
         }
     }
+}
+
+func clearBottomRow(sim *simulation.Simulation) {
+    var newParticles []particles.Particle
+    for _, p := range sim.Particles {
+        if p.Pos().Y != sim.H - 1 {
+            newParticles = append(newParticles, p)
+        }
+    }
+
+    sim.Particles = newParticles
 }
 
