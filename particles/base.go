@@ -7,7 +7,7 @@ import (
 )
 
 type Particle interface {
-    Update(w, h int, grid []Particle)
+    Update(w, h int, grid [][]Particle)
     Draw(screen tcell.Screen)
     Pos() geom.Vec2
     Char() rune
@@ -25,7 +25,7 @@ func (p *BaseParticle) Style() tcell.Style {
     return tcell.StyleDefault
 }
 
-func (p *BaseParticle) Update(w, h int, grid []Particle) {}
+func (p *BaseParticle) Update(w, h int, grid [][]Particle) {}
 
 func (p *BaseParticle) Draw(screen tcell.Screen) {
     pos := p.Pos()

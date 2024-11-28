@@ -7,25 +7,27 @@ import (
 
 type Simulation struct {
     screen tcell.Screen
-    Particles []particles.Particle
+    Particles []*particles.Particle
+    Grid [][]particles.Particle
     H int
     W int
 }
 
 func (s *Simulation) AddParticle(p particles.Particle) {
-    s.Particles = append(s.Particles, p)
+    s.Particles = append(s.Particles, &p)
+    s.Grid[p.Pos().X][p.Pos().Y] = p
 }
 
 func (s *Simulation) Update() {
     for _, p := range s.Particles {
-        p.Update(s.W, s.H, s.Particles)
+        (*p).Update(s.W, s.H, s.Grid)
     }
 }
 
 func (s *Simulation) Draw() {
     s.screen.Clear()
     for _, p := range s.Particles {
-        p.Draw(s.screen)
+        (*p).Draw(s.screen)
     }
 }
 
@@ -60,8 +62,14 @@ func (s *Simulation) Draw() {
 
 func NewSimulation(screen tcell.Screen) *Simulation {
     w, h := screen.Size()
+    grid := make([][]particles.Particle, w)
+    for i := range grid {
+        grid[i] = make([]particles.Particle, h)
+    }
+
     return &Simulation{
         screen: screen,
+        Grid: grid,
         W: w,
         H: h,
     }

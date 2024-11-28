@@ -6,6 +6,7 @@ import (
 	"time"
 
 	// "godown/geom"
+	"godown/cursor"
 	"godown/particles"
 	"godown/simulation"
 
@@ -27,15 +28,15 @@ func main() {
     sim := simulation.NewSimulation(screen)
 
     s := particles.NewSand(1, 1)
-
     sim.AddParticle(s)
 
     quit := make(chan struct{})
-
     start := time.Now()
 
+    cur := cursor.NewCursor(sim.W, sim.H, particles.NewSand(1, 1))
+
     go func() {
-        ticker := time.NewTicker(time.Second / 10)
+        ticker := time.NewTicker(time.Second / 20)
         defer ticker.Stop()
 
         loop:
@@ -43,17 +44,14 @@ func main() {
             select {
             case <-ticker.C:
 
-                if len(sim.Particles) > 3 * sim.W {
-                    clearBottomRow(sim)
-                }
-
                 status := []rune(fmt.Sprintf("sim.H = %d | sim.W = %d | len(sim.Particles) = %d | timePassed = %f", sim.H, sim.W, len(sim.Particles), time.Now().Sub(start).Seconds()))
                 randX := rand.Intn(sim.W)
-                randY := rand.Intn(sim.H / 2)
-                s = particles.NewSand(randX, randY)
+                // randY := rand.Intn(sim.H / 2)
+                s = particles.NewSand(randX, 1)
                 sim.AddParticle(s)
                 sim.Draw()
                 sim.Update()
+                screen.SetContent(cur.X, cur.Y, '+', nil, tcell.StyleDefault)
                 screen.SetContent(0, 0, ' ', status, tcell.StyleDefault)
                 screen.Show()
             case <- quit:
@@ -73,23 +71,19 @@ func main() {
             case ' ':
                 // randX := rand.Intn(sim.W)
                 // randY := rand.Intn(sim.H / 2)
-                s = particles.NewSand(sim.W / 2, 0)
+                // s = particles.NewSand(sim.W / 2, 0)
+                s := cur.SpawnParticle()
                 sim.AddParticle(s)
-            case 's':
-                clearBottomRow(sim)
+            case 'h':
+                cur.Move(cursor.West)
+            case 'j':
+                cur.Move(cursor.South)
+            case 'k':
+                cur.Move(cursor.North)
+            case 'l':
+                cur.Move(cursor.East)
             }
         }
     }
-}
-
-func clearBottomRow(sim *simulation.Simulation) {
-    var newParticles []particles.Particle
-    for _, p := range sim.Particles {
-        if p.Pos().Y != sim.H - 1 {
-            newParticles = append(newParticles, p)
-        }
-    }
-
-    sim.Particles = newParticles
 }
 
