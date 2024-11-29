@@ -36,15 +36,18 @@ func main() {
     cur := cursor.NewCursor(sim.W, sim.H, particles.NewSand(1, 1))
 
     go func() {
-        ticker := time.NewTicker(time.Second / 20)
+        ticker := time.NewTicker(time.Second / 30)
         defer ticker.Stop()
+
+        var iterTime time.Time
 
         loop:
         for {
             select {
             case <-ticker.C:
 
-                status := []rune(fmt.Sprintf("sim.H = %d | sim.W = %d | len(sim.Particles) = %d | timePassed = %f", sim.H, sim.W, len(sim.Particles), time.Now().Sub(start).Seconds()))
+                stats := []rune(generateStats(start, iterTime, sim))
+                iterTime = time.Now()
                 randX := rand.Intn(sim.W)
                 // randY := rand.Intn(sim.H / 2)
                 s = particles.NewSand(randX, 1)
@@ -52,7 +55,7 @@ func main() {
                 sim.Draw()
                 sim.Update()
                 screen.SetContent(cur.X, cur.Y, '+', nil, tcell.StyleDefault)
-                screen.SetContent(0, 0, ' ', status, tcell.StyleDefault)
+                screen.SetContent(0, 0, ' ', stats, tcell.StyleDefault)
                 screen.Show()
             case <- quit:
                 break loop
@@ -69,11 +72,27 @@ func main() {
                 screen.Fini()
                 return
             case ' ':
-                // randX := rand.Intn(sim.W)
-                // randY := rand.Intn(sim.H / 2)
-                // s = particles.NewSand(sim.W / 2, 0)
+                randX := rand.Intn(sim.W)
+                randY := rand.Intn(sim.H / 2)
+                s = particles.NewSand(randX, randY)
                 s := cur.SpawnParticle()
                 sim.AddParticle(s)
+            case 'n':
+                switch cur.Particle.(type) {
+                case *particles.Water:
+                    cur.Particle = particles.NewSand(0, 0)
+                case *particles.Sand:
+                    cur.Particle = particles.NewWater(0, 0)
+                }
+            case 'x':
+                newParticles := []particles.Particle{}
+                look := sim.Grid[cur.X][cur.Y]
+                for _, p := range sim.Particles {
+                    if look != *p {
+                        newParticles = append(newParticles, *p)
+                    }
+                }
+                sim.Grid[cur.X][cur.Y] = nil
             case 'h':
                 cur.Move(cursor.West)
             case 'j':
@@ -85,5 +104,10 @@ func main() {
             }
         }
     }
+}
+
+func generateStats(simStart, lastIter time.Time, sim *simulation.Simulation) []rune {
+    stats := []rune(fmt.Sprintf("sim.H = %d | sim.W = %d | len(sim.Particles) = %d | timePassed = %f | updateTime = %f", sim.H, sim.W, len(sim.Particles), time.Now().Sub(simStart).Seconds(), time.Now().Sub(lastIter).Seconds()))
+    return stats
 }
 

@@ -18,7 +18,7 @@ type Cursor struct {
     MaxX int
     MaxY int
     direction Direction
-    particle particles.Particle 
+    Particle particles.Particle 
 }
 
 func NewCursor(maxX, maxY int, particle particles.Particle) *Cursor {
@@ -28,7 +28,7 @@ func NewCursor(maxX, maxY int, particle particles.Particle) *Cursor {
         MaxX: maxX,
         MaxY: maxY,
         direction: South,
-        particle: particle,
+        Particle: particle,
     }
 }
 
@@ -46,19 +46,21 @@ func (c *Cursor) Move(to Direction) {
         newX = c.X - 1
     }
 
-    if !(newX > c.MaxX || newX < 0) {
+    if !(newX >= c.MaxX || newX < 0) {
         c.X = newX
     }
     
-    if !(newY > c.MaxY || newY < 0) {
+    if !(newY >= c.MaxY || newY < 0) {
         c.Y = newY
     }
 }
 
 func (c *Cursor) SpawnParticle() particles.Particle {
-    switch c.particle.(type) {
+    switch c.Particle.(type) {
     case *particles.Sand:
         return particles.NewSand(c.X, c.Y)
+    case *particles.Water:
+        return particles.NewWater(c.X, c.Y)
     }
     return nil
 }
