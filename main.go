@@ -26,9 +26,12 @@ func main() {
     defer screen.Fini()
 
     sim := simulation.NewSimulation(screen)
+    // w, h := screen.Size()
+    // 626 132
 
     s := particles.NewSand(1, 1)
     sim.AddParticle(s)
+    fmt.Println(s)
 
     quit := make(chan struct{})
     start := time.Now()
@@ -37,23 +40,32 @@ func main() {
 
     go func() {
         ticker := time.NewTicker(time.Second / 30)
+        particleTicker := time.NewTicker(time.Second / 5)
         defer ticker.Stop()
 
-        var iterTime time.Time
+        var tsB time.Time
+        var tsA time.Time
 
         loop:
         for {
             select {
-            case <-ticker.C:
-
-                stats := []rune(generateStats(start, iterTime, sim))
-                iterTime = time.Now()
+            case <- particleTicker.C:
                 randX := rand.Intn(sim.W)
                 // randY := rand.Intn(sim.H / 2)
                 s = particles.NewSand(randX, 1)
-                sim.AddParticle(s)
+                // sim.AddParticle(s)
+
+            case <-ticker.C:
+                // if len(sim.Particles) >= sim.H * sim.W {
+                //     sim.Particles = []*particles.Particle{}
+                //     sim.Grid = [][]particles.Particle{}
+                // }
+                stats := []rune(generateStats(start, tsA.Sub(tsB), sim))
+                // iterTime = time.Now()
                 sim.Draw()
+                tsB = time.Now()
                 sim.Update()
+                tsA = time.Now()
                 screen.SetContent(cur.X, cur.Y, '+', nil, tcell.StyleDefault)
                 screen.SetContent(0, 0, ' ', stats, tcell.StyleDefault)
                 screen.Show()
@@ -72,9 +84,9 @@ func main() {
                 screen.Fini()
                 return
             case ' ':
-                randX := rand.Intn(sim.W)
-                randY := rand.Intn(sim.H / 2)
-                s = particles.NewSand(randX, randY)
+                // randX := rand.Intn(sim.W)
+                // randY := rand.Intn(sim.H / 2)
+                // s = particles.NewSand(randX, randY)
                 s := cur.SpawnParticle()
                 sim.AddParticle(s)
             case 'n':
@@ -85,13 +97,6 @@ func main() {
                     cur.Particle = particles.NewWater(0, 0)
                 }
             case 'x':
-                newParticles := []particles.Particle{}
-                look := sim.Grid[cur.X][cur.Y]
-                for _, p := range sim.Particles {
-                    if look != *p {
-                        newParticles = append(newParticles, *p)
-                    }
-                }
                 sim.Grid[cur.X][cur.Y] = nil
             case 'h':
                 cur.Move(cursor.West)
@@ -106,8 +111,8 @@ func main() {
     }
 }
 
-func generateStats(simStart, lastIter time.Time, sim *simulation.Simulation) []rune {
-    stats := []rune(fmt.Sprintf("sim.H = %d | sim.W = %d | len(sim.Particles) = %d | timePassed = %f | updateTime = %f", sim.H, sim.W, len(sim.Particles), time.Now().Sub(simStart).Seconds(), time.Now().Sub(lastIter).Seconds()))
+func generateStats(simStart time.Time, updateTime time.Duration, sim *simulation.Simulation) []rune {
+    stats := []rune(fmt.Sprintf("sim.H = %d | sim.W = %d | particles = %d | timePassed = %f | updateTime = %f", sim.H, sim.W, sim.ParticleCount, time.Now().Sub(simStart).Seconds(), updateTime.Seconds()))
     return stats
 }
 

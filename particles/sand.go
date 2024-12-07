@@ -48,34 +48,15 @@ func (s *Sand) Update(w, h int, grid [][]Particle) {
             s.pos = geom.Vec2{X: newX, Y: newY}
             grid[curX][curY] = nil
             grid[newX][newY] = s
-
             return
         }
+        // if newY + 1 < len(grid[newX]) {
+            // if _, ok := grid[newX][newY].(*Water); ok {
+                // panic(newY)
+                // grid[newX][newY], grid[curX][curY] =  grid[curX][curY], grid[newX][newY]
+            // }
+        // }
     }
-
-    // possiblePositions := []geom.Vec2 {
-    //     {X: 0, Y: 1},
-    //     {X: 1, Y: 1},
-    //     {X: -1, Y: 1},
-    // }
-
-    // occupied := make(map[geom.Vec2]bool)
-    // for _, p := range grid {
-    //     occupied[p.Pos()] = true
-    // }
-
-    // for _, pos := range possiblePositions {
-    //     newX := s.pos.X + pos.X
-    //     newY := s.pos.Y + pos.Y
-
-    //     if newY < h && newY >= 0 && newX < w && newX >= 0 {
-    //         newPos := geom.Vec2{X: newX, Y: newY}
-    //         if !occupied[newPos] {
-    //             s.pos = newPos
-    //             return
-    //         }
-    //     }
-    // }
 }
 
 func (s *Sand) Draw(screen tcell.Screen) {
